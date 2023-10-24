@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h2>номер страницы</h2>
+<input type="text" id="pageInput">
+
+<h2>лимит</h2>
+<input type="text" id="limitInput">
+
+<button id="requestButton">запрос</button>
+
+<div id="resultContainer"></div>
+
+<script>
+    const pageInput = document.getElementById('pageInput');
+    const limitInput = document.getElementById('limitInput');
+    const requestButton = document.getElementById('requestButton');
+    const resultContainer = document.getElementById('resultContainer');
+
+    // Обработчик клика на кнопку
+    requestButton.addEventListener('click', () => {
+        const pageNumber = parseInt(pageInput.value);
+        const limit = parseInt(limitInput.value);
+
+        // Проверка введенных чисел
+        if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > 10) {
+            resultContainer.textContent = 'Номер страницы вне диапазона от 1 до 10';
+            return;
+        }
+
+        if (isNaN(limit) || limit < 1 || limit > 10) {
+            resultContainer.textContent = 'Лимит вне диапазона от 1 до 10';
+            return;
+        }
+
+        // Формирование URL для запроса
+        const url = `https://picsum.photos/v2/list?page=${pageNumber}&limit=${limit}`;
+
+        // Выполнение запроса
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Сохранение результатов в localStorage
+                localStorage.setItem('lastRequestData', JSON.stringify(data));
+                displayImages(data);
+            })
+            .catch(error => console.log(error));
+    });
+
+    // Функция для отображения изображений
+    function displayImages(images) {
+        resultContainer.innerHTML = ''; // Очистка контейнера
+
+        images.forEach(image => {
+            const imgElement = document.createElement('img');
+            imgElement.src = image.download_url;
+            resultContainer.appendChild(imgElement);
+        });
+    }
+
+    // Проверка наличия сохраненных результатов в localStorage
+    const lastRequestData = localStorage.getItem('lastRequestData');
+    if (lastRequestData) {
+        const data = JSON.parse(lastRequestData);
+        displayImages(data);
+    }
+</script>
+
+</body>
+</html>
